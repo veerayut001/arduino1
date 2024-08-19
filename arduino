@@ -1,0 +1,50 @@
+#include <SPI.h>
+#include <SD.h>
+
+const int trigPin = 6;
+const int echoPin = 7;
+const int chipSelect = 4;
+long duration,distance;
+
+
+File myFile;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  Serial.print("Initializing SD card...");
+  pinMode(chipSelect, OUTPUT);
+
+  if (!SD.begin(chipSelect)) {
+    Serial.println("Initialization failed!");
+    return;
+  }
+  Serial.println("Initialization done.");
+}
+
+void loop() {
+  // Measure distance
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2;
+
+  // Open the file for writing
+  myFile = SD.open("distance.txt", FILE_WRITE);
+  if (myFile) {
+    myFile.println("Distance (cm): " + String(distance));
+    myFile.close();
+  } else {
+    Serial.println("Error opening distance.txt");
+  }
+
+  // Print distance in Serial Monitor
+  Serial.println("Distance (cm): " + String(distance));
+
+  delay(3000); // Delay for 3 seconds
+}
